@@ -1,0 +1,30 @@
+(* -*- tuareg -*- *)
+
+let impl_libs =
+  Scanf.sscanf
+    Sys.ocaml_version
+    "%d.%2d.%s"
+    (fun maj min _ ->
+      match maj, min with
+      | 4, 12 -> []
+      | 4, 14 -> []
+      | 5, _ -> []
+      (* | 4, min when min >= 12 -> [] *)
+      | _ -> assert false)
+
+let () = Jbuild_plugin.V1.send @@ {|
+(env 
+  (dev (flags (:standard -w -9..37 -g))))
+(executable
+ (name ocamledit)
+ (modes byte)
+ (modules ocamledit)
+ (preprocess
+  (pps lwt_ppx ppx_optcomp))
+ (libraries 
+   compiler-libs.bytecomp
+   compiler-libs.common
+   compiler-libs.optcomp
+   compiler-libs.toplevel
+|} ^ String.concat "\n" impl_libs ^ {|))
+|}
